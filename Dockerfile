@@ -9,21 +9,29 @@ RUN apt-get update && \
 # Create app directory
 WORKDIR /usr/src/app
 
-# Copy package files
+# Create necessary directories
+RUN mkdir -p assets hls_output && \
+    chmod 777 hls_output && \
+    chmod 777 assets
+
+# Copy package files first (for better caching)
 COPY package*.json ./
 COPY pnpm-lock.yaml ./
 
 # Install pnpm
 RUN npm install -g pnpm
 
-# Install dependencies with no security checks
-RUN pnpm install --no-strict-ssl --unsafe-perm
+# Install dependencies
+RUN pnpm install
 
-# Copy source code
+# Copy the rest of the application code
 COPY . .
 
-# Create HLS output directory with permissive permissions
-RUN mkdir -p hls_output && chmod 777 hls_output
+# IMPORTANT: Copy the test video file
+COPY assets/test.mp4 /usr/src/app/assets/
+
+# Verify the file exists (this will fail the build if the file is missing)
+RUN ls -la /usr/src/app/assets/test.mp4
 
 # Expose port
 EXPOSE 8777
