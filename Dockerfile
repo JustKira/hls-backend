@@ -1,4 +1,3 @@
-# Dockerfile
 FROM node:18-slim
 
 # Install ffmpeg
@@ -17,14 +16,14 @@ COPY pnpm-lock.yaml ./
 # Install pnpm
 RUN npm install -g pnpm
 
-# Install dependencies
-RUN pnpm install
+# Install dependencies with no security checks
+RUN pnpm install --no-strict-ssl --unsafe-perm
 
 # Copy source code
 COPY . .
 
-# Create HLS output directory
-RUN mkdir -p hls_output
+# Create HLS output directory with permissive permissions
+RUN mkdir -p hls_output && chmod 777 hls_output
 
 # Expose port
 EXPOSE 8777
